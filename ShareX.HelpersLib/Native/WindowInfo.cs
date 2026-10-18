@@ -35,11 +35,11 @@ namespace ShareX.HelpersLib
 
         public bool IsHandleCreated => Handle != IntPtr.Zero;
 
-        public string Text => NativeMethods.GetWindowText(Handle);
+        public string Text => OperatingSystem.IsMacOS() ? MacWindows.GetWindow(Handle)?.Title : NativeMethods.GetWindowText(Handle);
 
         public string ClassName => NativeMethods.GetClassName(Handle);
 
-        public Process Process => NativeMethods.GetProcessByWindowHandle(Handle);
+        public Process Process => OperatingSystem.IsMacOS() ? GetMacProcess() : NativeMethods.GetProcessByWindowHandle(Handle);
 
         public string ProcessName
         {
@@ -80,7 +80,8 @@ namespace ShareX.HelpersLib
 
         public Rectangle Rectangle => CaptureHelpers.GetWindowRectangle(Handle);
 
-        public Rectangle ClientRectangle => NativeMethods.GetClientRect(Handle);
+        // macOS exposes no client area for other apps' windows; use the content bounds.
+        public Rectangle ClientRectangle => OperatingSystem.IsMacOS() ? Rectangle : NativeMethods.GetClientRect(Handle);
 
         public WindowStyles Style
         {
@@ -164,7 +165,25 @@ namespace ShareX.HelpersLib
             }
         }
 
+#if WINDOWS
         public Icon Icon => NativeMethods.GetApplicationIcon(Handle);
+#endif
+
+        /// <summary>The window's icon as a bitmap, or null when unavailable (always on macOS for now).</summary>
+        public SkiaSharp.SKBitmap GetIconBitmap()
+        {
+#if WINDOWS
+            using Icon icon = Icon;
+            if (icon == null || icon.Width <= 0 || icon.Height <= 0)
+            {
+                return null;
+            }
+
+            return WindowsImageInterop.FromIcon(icon.Handle);
+#else
+            return null;
+#endif
+        }
 
         public bool IsMaximized => NativeMethods.IsZoomed(Handle);
 
@@ -175,6 +194,22 @@ namespace ShareX.HelpersLib
         public bool IsCloaked => NativeMethods.IsWindowCloaked(Handle);
 
         public bool IsActive => NativeMethods.IsActive(Handle);
+
+        [System.Runtime.Versioning.SupportedOSPlatform("macos")]
+        private Process GetMacProcess()
+        {
+            int processId = MacWindows.GetWindow(Handle)?.ProcessId ?? 0;
+            if (processId <= 0) return null;
+
+            try
+            {
+                return Process.GetProcessById(processId);
+            }
+            catch (ArgumentException)
+            {
+                return null;
+            }
+        }
 
         public WindowInfo(IntPtr handle)
         {

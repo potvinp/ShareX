@@ -11,12 +11,28 @@
     <Configurations>Release;Debug;Steam;MicrosoftStore;MicrosoftStoreDebug</Configurations>
     <Platforms>x64;ARM64</Platforms>
   </PropertyGroup>
+  <!-- Target OS: "windows" (default) or "macos". Pass -p:SharexTargetOS=macos, or a -r osx-* runtime identifier. -->
+  <PropertyGroup>
+    <SharexTargetOS Condition="'$(SharexTargetOS)' == '' and $(RuntimeIdentifier.StartsWith('osx'))">macos</SharexTargetOS>
+    <SharexTargetOS Condition="'$(SharexTargetOS)' == ''">windows</SharexTargetOS>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(SharexTargetOS)' == 'windows'">
+    <SharexTargetFramework>net10.0-windows</SharexTargetFramework>
+    <SharexWindowsSdkTargetFramework>net10.0-windows10.0.22621.0</SharexWindowsSdkTargetFramework>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(SharexTargetOS)' == 'macos'">
+    <SharexTargetFramework>net10.0</SharexTargetFramework>
+    <SharexWindowsSdkTargetFramework>net10.0</SharexWindowsSdkTargetFramework>
+    <DefineConstants>$(DefineConstants);MACOS</DefineConstants>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Platform)' == 'x64'">
-    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(SharexTargetOS)' == 'windows'">win-x64</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(SharexTargetOS)' == 'macos'">osx-x64</RuntimeIdentifier>
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Platform)' == 'ARM64'">
-    <RuntimeIdentifier>win-arm64</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(SharexTargetOS)' == 'windows'">win-arm64</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(SharexTargetOS)' == 'macos'">osx-arm64</RuntimeIdentifier>
     <PlatformTarget>ARM64</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Steam'">

@@ -128,13 +128,12 @@ public static class InspectWindowService
     {
         try
         {
-            using System.Drawing.Icon? icon = window.Icon;
-            if (icon == null || icon.Width <= 0 || icon.Height <= 0)
+            using SKBitmap? bitmap = window.GetIconBitmap();
+            if (bitmap == null)
             {
                 return null;
             }
 
-            using SKBitmap bitmap = WindowsImageInterop.FromIcon(icon.Handle);
             using MemoryStream stream = new();
             bitmap.Save(stream, ImageFormat.Png);
             stream.Position = 0;

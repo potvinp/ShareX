@@ -45,9 +45,15 @@ public sealed class ScreenRecorder : IDisposable, IAsyncDisposable
     private readonly TaskCompletionSource started = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private readonly TaskCompletionSource<RecordingResult> completed = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private Thread? worker;
+#if !WINDOWS
+#pragma warning disable CS0414, CS0649 // Only the Windows pipeline in Run() reads or writes these.
+#endif
     private bool startRequested, disposed, resumeRequested;
     private Rectangle? resumeRegion;
     private int recording;
+#if !WINDOWS
+#pragma warning restore CS0414, CS0649
+#endif
 
     public Task<RecordingResult> Completion => completed.Task;
     public VideoEncoderInfo? Encoder { get; private set; }
@@ -148,6 +154,11 @@ public sealed class ScreenRecorder : IDisposable, IAsyncDisposable
 
     private unsafe void Run()
     {
+#if !WINDOWS
+        // The GPU pipeline is built on Windows.Graphics.Capture and Media Foundation.
+        PlatformNotSupportedException unsupported = new("Native screen recording is only available on Windows.");
+        prepared.TrySetException(unsupported); started.TrySetException(unsupported); completed.TrySetException(unsupported);
+#else
         bool com = false, mediaFoundation = false, ownsOutput = false;
         try
         {
@@ -331,6 +342,7 @@ public sealed class ScreenRecorder : IDisposable, IAsyncDisposable
             if (mediaFoundation) MediaFactory.MFShutdown();
             if (com) NativeMethods.CoUninitialize();
         }
+#endif
     }
 
     private void ReportDiagnostic(string message)

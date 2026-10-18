@@ -1,0 +1,122 @@
+name: Build ShareX (macOS)
+
+on:
+  push:
+    branches:
+      - "**"
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+    paths-ignore:
+      - "**/*.md"
+      - "**/*.gitignore"
+      - "**/*.gitattributes"
+  pull_request:
+    branches:
+      - "**"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build (${{ matrix.arch }})
+    # Apple silicon runner; the x64 bundle is cross-published and smoke tested under Rosetta.
+    runs-on: macos-15
+
+    strategy:
+      fail-fast: false
+      matrix:
+        arch:
+          - arm64
+          - x64
+
+    env:
+      MACOS_CERTIFICATE_P12: ${{ secrets.MACOS_CERTIFICATE_P12 }}
+      MACOS_NOTARY_KEY_P8: ${{ secrets.MACOS_NOTARY_KEY_P8 }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Build native helper
+        run: native/macos/build.sh
+
+      - name: Import signing certificate
+        if: github.event_name == 'push' && env.MACOS_CERTIFICATE_P12 != ''
+        env:
+          MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+          MACOS_SIGN_IDENTITY: ${{ secrets.MACOS_SIGN_IDENTITY }}
+        run: |
+          keychain="$RUNNER_TEMP/build.keychain-db"
+          keychain_password=$(uuidgen)
+          echo "$MACOS_CERTIFICATE_P12" | base64 --decode > "$RUNNER_TEMP/certificate.p12"
+          security create-keychain -p "$keychain_password" "$keychain"
+          security set-keychain-settings -lut 21600 "$keychain"
+          security unlock-keychain -p "$keychain_password" "$keychain"
+          security import "$RUNNER_TEMP/certificate.p12" -k "$keychain" -P "$MACOS_CERTIFICATE_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$keychain_password" "$keychain"
+          security list-keychains -d user -s "$keychain" $(security list-keychains -d user | tr -d '"')
+          rm "$RUNNER_TEMP/certificate.p12"
+          echo "MACOS_SIGN_IDENTITY=$MACOS_SIGN_IDENTITY" >> "$GITHUB_ENV"
+
+      - name: Prepare notarization key
+        if: github.event_name == 'push' && env.MACOS_CERTIFICATE_P12 != '' && env.MACOS_NOTARY_KEY_P8 != ''
+        env:
+          MACOS_NOTARY_KEY_ID: ${{ secrets.MACOS_NOTARY_KEY_ID }}
+          MACOS_NOTARY_ISSUER: ${{ secrets.MACOS_NOTARY_ISSUER }}
+        run: |
+          echo "$MACOS_NOTARY_KEY_P8" | base64 --decode > "$RUNNER_TEMP/notary.p8"
+          echo "MACOS_NOTARY_KEY_PATH=$RUNNER_TEMP/notary.p8" >> "$GITHUB_ENV"
+          echo "MACOS_NOTARY_KEY_ID=$MACOS_NOTARY_KEY_ID" >> "$GITHUB_ENV"
+          echo "MACOS_NOTARY_ISSUER=$MACOS_NOTARY_ISSUER" >> "$GITHUB_ENV"
+
+      - name: Package
+        run: ShareX.Setup/macOS/package.sh "${{ matrix.arch }}" Release
+
+      - name: Verify architectures
+        run: |
+          app="Output/macos-${{ matrix.arch }}/ShareX.app/Contents/MacOS"
+          expected=$([ "${{ matrix.arch }}" = "arm64" ] && echo arm64 || echo x86_64)
+          lipo -info "$app/ShareX"
+          lipo -info "$app/ShareX" | grep -q "$expected"
+          # The native helper is universal and shared by both bundles.
+          lipo -info "$app/libsharex_macos.dylib" | grep -q "x86_64 arm64"
+
+      - name: Smoke test launch
+        run: |
+          prefix=""
+          if [ "${{ matrix.arch }}" = "x64" ]; then
+            if ! arch -x86_64 /usr/bin/true 2> /dev/null; then
+              echo "::warning::Rosetta is not available; skipping x64 launch test."
+              exit 0
+            fi
+            prefix="arch -x86_64"
+          fi
+          # Use a throwaway HOME so settings and logs go to $HOME/Documents/ShareX outside the runner's profile.
+          home="$RUNNER_TEMP/home"
+          mkdir -p "$home/Documents"
+          HOME="$home" $prefix "Output/macos-${{ matrix.arch }}/ShareX.app/Contents/MacOS/ShareX" -silent &
+          pid=$!
+          sleep 30
+          status=0
+          if ! kill -0 "$pid" 2> /dev/null; then
+            echo "::error::ShareX exited during startup."
+            status=1
+          fi
+          # Foundation may resolve Documents from the account rather than $HOME, so check both.
+          for logs in "$home/Documents/ShareX/Logs" "$HOME/Documents/ShareX/Logs"; do
+            [ -d "$logs" ] && find "$logs" -type f -exec cat {} \;
+          done
+          kill "$pid" 2> /dev/null || true
+          exit $status
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: macOS-${{ matrix.arch }}
+          path: Output/ShareX-*-macos-${{ matrix.arch }}.dmg

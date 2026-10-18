@@ -35,7 +35,10 @@ internal static class ApplicationInfo
 {
     internal const string Name = "ShareX";
     internal const string MutexName = "82E6AC09-0FEF-4390-AD9F-0DD3F5561EFC";
-    internal static readonly string PipeName = $"{Environment.MachineName}-{Environment.UserName}-{Name}";
+    // Unix pipes are sockets in the per-user temp directory, whose paths are limited to 104 bytes on macOS.
+    internal static readonly string PipeName = OperatingSystem.IsWindows()
+        ? $"{Environment.MachineName}-{Environment.UserName}-{Name}"
+        : $"{Name}-{Environment.UserName}";
 
     internal const ShareXBuild Build =
 #if RELEASE

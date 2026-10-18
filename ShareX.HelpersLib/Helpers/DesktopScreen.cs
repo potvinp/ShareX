@@ -44,25 +44,52 @@ public sealed class DesktopScreen
         Primary = screen.IsPrimary;
     }
 
-    public static DesktopScreen[] AllScreens => DesktopServices.Run(() =>
-        DesktopServices.GetWindow().Screens.All.Select(x => new DesktopScreen(x)).ToArray());
+    // macOS screens come from the native helper so they use the same pixel space as MacScreenCapture.
+    [System.Runtime.Versioning.SupportedOSPlatform("macos")]
+    private DesktopScreen(MacDisplays.Display display)
+    {
+        Bounds = display.PixelBounds;
+        WorkingArea = display.PixelWorkingArea;
+        Primary = display.Primary;
+    }
+
+    public static DesktopScreen[] AllScreens => OperatingSystem.IsMacOS()
+        ? GetMacScreens()
+        : DesktopServices.Run(() => DesktopServices.GetWindow().Screens.All.Select(x => new DesktopScreen(x)).ToArray());
+
+    [System.Runtime.Versioning.SupportedOSPlatform("macos")]
+    private static DesktopScreen[] GetMacScreens() => MacDisplays.GetDisplays().Select(x => new DesktopScreen(x)).ToArray();
 
     public static DesktopScreen PrimaryScreen => AllScreens.FirstOrDefault(x => x.Primary) ?? AllScreens.FirstOrDefault();
 
-    public static DesktopScreen FromPoint(Point point) => DesktopServices.Run(() =>
+    public static DesktopScreen FromPoint(Point point)
     {
-        var screens = DesktopServices.GetWindow().Screens;
-        var screen = screens.ScreenFromPoint(new Avalonia.PixelPoint(point.X, point.Y)) ?? screens.Primary;
-        return screen == null ? null : new DesktopScreen(screen);
-    });
+        if (OperatingSystem.IsMacOS()) return new DesktopScreen(MacDisplays.FromPixel(point));
 
-    public static DesktopScreen FromRectangle(Rectangle bounds) => DesktopServices.Run(() =>
+        return DesktopServices.Run(() =>
+        {
+            var screens = DesktopServices.GetWindow().Screens;
+            var screen = screens.ScreenFromPoint(new Avalonia.PixelPoint(point.X, point.Y)) ?? screens.Primary;
+            return screen == null ? null : new DesktopScreen(screen);
+        });
+    }
+
+    public static DesktopScreen FromRectangle(Rectangle bounds)
     {
-        var screens = DesktopServices.GetWindow().Screens;
-        var screen = screens.ScreenFromBounds(new Avalonia.PixelRect(bounds.X, bounds.Y, bounds.Width, bounds.Height)) ?? screens.Primary;
-        return screen == null ? null : new DesktopScreen(screen);
-    });
+        if (OperatingSystem.IsMacOS()) return new DesktopScreen(MacDisplays.FromPixelRectangle(bounds));
 
-    public static DesktopScreen FromHandle(IntPtr handle) =>
-        OperatingSystem.IsWindows() ? FromRectangle(NativeMethods.GetWindowRect(handle)) : PrimaryScreen;
+        return DesktopServices.Run(() =>
+        {
+            var screens = DesktopServices.GetWindow().Screens;
+            var screen = screens.ScreenFromBounds(new Avalonia.PixelRect(bounds.X, bounds.Y, bounds.Width, bounds.Height)) ?? screens.Primary;
+            return screen == null ? null : new DesktopScreen(screen);
+        });
+    }
+
+    public static DesktopScreen FromHandle(IntPtr handle)
+    {
+        if (OperatingSystem.IsWindows()) return FromRectangle(NativeMethods.GetWindowRect(handle));
+        if (OperatingSystem.IsMacOS()) return FromRectangle(MacWindows.GetWindowRectangle(handle));
+        return PrimaryScreen;
+    }
 }

@@ -60,6 +60,12 @@ namespace ShareX.ScreenCaptureLib
 
         public Bitmap CaptureWindow(IntPtr handle)
         {
+            if (OperatingSystem.IsMacOS())
+            {
+                // Without CaptureTransparent, keep Windows' semantics: an opaque image of the window bounds.
+                return handle == IntPtr.Zero ? null : MacScreenCapture.CaptureWindow(handle, includeShadow: false, CaptureCursor);
+            }
+
             if (handle.ToInt32() > 0)
             {
                 Rectangle rect;
@@ -98,7 +104,7 @@ namespace ShareX.ScreenCaptureLib
 
         public Bitmap CaptureActiveWindow()
         {
-            IntPtr handle = NativeMethods.GetForegroundWindow();
+            IntPtr handle = CaptureHelpers.GetForegroundWindow();
 
             return CaptureWindow(handle);
         }
@@ -112,6 +118,11 @@ namespace ShareX.ScreenCaptureLib
 
         private Bitmap CaptureRectangleNative(Rectangle rect, bool captureCursor = false)
         {
+            if (OperatingSystem.IsMacOS())
+            {
+                return MacScreenCapture.CaptureRectangle(rect, captureCursor);
+            }
+
             IntPtr handle = NativeMethods.GetDesktopWindow();
             return CaptureRectangleNative(handle, rect, captureCursor);
         }

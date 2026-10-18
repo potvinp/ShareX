@@ -37,6 +37,12 @@ namespace ShareX.ScreenCaptureLib
     {
         public Bitmap CaptureWindowTransparent(IntPtr handle)
         {
+            if (OperatingSystem.IsMacOS())
+            {
+                // ScreenCaptureKit renders the window alone with real alpha, so no background diffing is needed.
+                return handle == IntPtr.Zero ? null : MacScreenCapture.CaptureWindow(handle, CaptureShadow, CaptureCursor);
+            }
+
             if (handle != IntPtr.Zero)
             {
                 Rectangle rect = CaptureHelpers.GetWindowRectangle(handle);
@@ -149,7 +155,7 @@ namespace ShareX.ScreenCaptureLib
 
         public Bitmap CaptureActiveWindowTransparent()
         {
-            IntPtr handle = NativeMethods.GetForegroundWindow();
+            IntPtr handle = CaptureHelpers.GetForegroundWindow();
 
             return CaptureWindowTransparent(handle);
         }

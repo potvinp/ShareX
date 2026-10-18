@@ -78,6 +78,10 @@ internal static class AvaloniaClipboard
         return true;
     });
 
+    // Platform clipboard identifiers: Windows clipboard format names, macOS pasteboard UTIs, MIME types elsewhere.
+    private static string PngFormat => OperatingSystem.IsWindows() ? "PNG" : OperatingSystem.IsMacOS() ? "public.png" : "image/png";
+    private static string HtmlFormat => OperatingSystem.IsWindows() ? ClipboardDataFormats.Html : OperatingSystem.IsMacOS() ? "public.html" : "text/html";
+
     private static OwnedImageTransfer CreateImageTransfer(byte[] png, byte[] dib, string html)
     {
         using MemoryStream stream = new(png, writable: false);
@@ -87,11 +91,11 @@ internal static class AvaloniaClipboard
         {
             DataTransferItem item = new();
             item.SetBitmap(bitmap);
-            item.Set(DataFormat.CreateBytesPlatformFormat(OperatingSystem.IsWindows() ? "PNG" : "image/png"), png);
+            item.Set(DataFormat.CreateBytesPlatformFormat(PngFormat), png);
             if (OperatingSystem.IsWindows())
                 item.Set(DataFormat.CreateBytesPlatformFormat("CF_DIB"), dib);
             if (!string.IsNullOrEmpty(html))
-                item.Set(DataFormat.CreateStringPlatformFormat(OperatingSystem.IsWindows() ? ClipboardDataFormats.Html : "text/html"), html);
+                item.Set(DataFormat.CreateStringPlatformFormat(HtmlFormat), html);
             transfer.Add(item);
             return new OwnedImageTransfer(transfer, bitmap);
         }
@@ -106,14 +110,14 @@ internal static class AvaloniaClipboard
             ClipboardDataFormats.Text => formats.Contains(DataFormat.Text),
             ClipboardDataFormats.FileDrop => formats.Contains(DataFormat.File),
             ClipboardDataFormats.Bitmap => formats.Contains(DataFormat.Bitmap) ||
-                formats.Any(x => x.Identifier is "PNG" or "image/png" or "CF_DIB" or "CF_DIBV5"),
+                formats.Any(x => x.Identifier is "PNG" or "image/png" or "public.png" or "CF_DIB" or "CF_DIBV5"),
             _ => formats.Any(x => x.Identifier.Equals(kind, StringComparison.OrdinalIgnoreCase))
         };
     });
 
     public static byte[] GetImage() => DesktopServices.Run(async () =>
     {
-        byte[] png = await Clipboard.TryGetValueAsync(DataFormat.CreateBytesPlatformFormat(OperatingSystem.IsWindows() ? "PNG" : "image/png"));
+        byte[] png = await Clipboard.TryGetValueAsync(DataFormat.CreateBytesPlatformFormat(PngFormat));
         if (png != null) return png;
         using AvaloniaBitmap bitmap = await Clipboard.TryGetBitmapAsync();
         if (bitmap == null) return null;

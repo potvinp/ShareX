@@ -460,8 +460,17 @@ public partial class RegionCaptureWindow : Window
             }
 
             ApplyPixelSize();
-            Helpers.EnsureWindowPosition(this, _request.ScreenBounds.X, _request.ScreenBounds.Y);
+            Helpers.ConfigureCaptureOverlay(this, _request.ScreenBounds);
             UpdatePixelTransforms();
+            if (OperatingSystem.IsMacOS())
+            {
+                // Moving the window onto its display can change the backing scale after Opened.
+                ScalingChanged += (_, _) =>
+                {
+                    ApplyPixelSize();
+                    UpdatePixelTransforms();
+                };
+            }
             _editorWorkspace.ConfigureForFullscreenWorkspace();
             _editorWorkspace.LoadWorkspaceImage(_request.Screenshot);
             _workspaceOwnsScreenshot = true;
@@ -880,15 +889,15 @@ public partial class RegionCaptureWindow : Window
             return;
         }
 
-        Screen? screen = Screens.ScreenFromPoint(desktopPoint);
-        if (screen == null)
+        DrawingRectangle? screenBounds = GetScreenBounds(desktopPoint);
+        if (screenBounds is not { } bounds)
         {
             return;
         }
 
         double scale = double.IsFinite(RenderScaling) && RenderScaling > 0 ? RenderScaling : 1;
-        double monitorCenterX = screen.Bounds.X - _request.ScreenBounds.X + screen.Bounds.Width / 2d;
-        double monitorTop = screen.Bounds.Y - _request.ScreenBounds.Y;
+        double monitorCenterX = bounds.X - _request.ScreenBounds.X + bounds.Width / 2d;
+        double monitorTop = bounds.Y - _request.ScreenBounds.Y;
         _captureToolbarCenterX = monitorCenterX / scale;
         _captureToolbarTop = monitorTop / scale;
         _positionedCaptureToolbarWidth = double.NaN;
@@ -1544,17 +1553,17 @@ public partial class RegionCaptureWindow : Window
         PixelPoint desktopPoint = new PixelPoint(
             _request.ScreenBounds.X + (int)Math.Round(_lastPointerPoint.X),
             _request.ScreenBounds.Y + (int)Math.Round(_lastPointerPoint.Y));
-        Screen? screen = Screens.ScreenFromPoint(desktopPoint);
-        if (screen == null)
+        DrawingRectangle? screenBounds = GetScreenBounds(desktopPoint);
+        if (screenBounds is not { } bounds)
         {
             return;
         }
 
         Rect relative = new Rect(
-            screen.Bounds.X - _request.ScreenBounds.X,
-            screen.Bounds.Y - _request.ScreenBounds.Y,
-            screen.Bounds.Width,
-            screen.Bounds.Height);
+            bounds.X - _request.ScreenBounds.X,
+            bounds.Y - _request.ScreenBounds.Y,
+            bounds.Width,
+            bounds.Height);
         Complete(RegionSelectionOverlay.Intersect(relative,
             new Rect(0, 0, _imageWidth, _imageHeight)),
             includeWindowInfo: false);
@@ -1700,8 +1709,26 @@ public partial class RegionCaptureWindow : Window
             return 1;
         }
 
+        if (OperatingSystem.IsMacOS())
+        {
+            return MacDisplays.FromPixelRectangle(_request.ScreenBounds).Scale;
+        }
+
         PixelPoint topLeft = new PixelPoint(_request.ScreenBounds.X, _request.ScreenBounds.Y);
         return Screens.ScreenFromPoint(topLeft)?.Scaling ?? Screens.Primary?.Scaling ?? 1;
+    }
+
+    /// <summary>Bounds of the screen at a desktop point, in the same coordinates as the request's ScreenBounds.</summary>
+    private DrawingRectangle? GetScreenBounds(PixelPoint desktopPoint)
+    {
+        // Avalonia reports macOS screens in points, while ShareX screen coordinates there are pixels (see MacDisplays).
+        if (OperatingSystem.IsMacOS())
+        {
+            return DesktopScreen.FromPoint(new DrawingPoint(desktopPoint.X, desktopPoint.Y)).Bounds;
+        }
+
+        Screen? screen = Screens.ScreenFromPoint(desktopPoint);
+        return screen == null ? null : new DrawingRectangle(screen.Bounds.X, screen.Bounds.Y, screen.Bounds.Width, screen.Bounds.Height);
     }
 
     private static byte GetDimAlpha(RegionCaptureOptions options)

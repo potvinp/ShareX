@@ -26,7 +26,9 @@
 using SkiaSharp;
 using System;
 using System.Drawing;
+#if WINDOWS
 using System.Drawing.Printing;
+#endif
 using System.Text;
 
 namespace ShareX.HelpersLib;
@@ -39,12 +41,14 @@ internal sealed class PrintTextHelper
     public ImageFont Font { get; set; }
     public void BeginPrint() { offset = 0; page = 1; }
 
+#if WINDOWS
     public void PrintPage(PrintPageEventArgs args)
     {
         using SKBitmap bitmap = RenderPage(args.PageBounds.Size, args.MarginBounds, out bool morePages);
         if (bitmap != null) WindowsPrintInterop.DrawImage(args, bitmap, args.PageBounds);
         args.HasMorePages = morePages;
     }
+#endif
 
     // Page and margin bounds are in hundredths of an inch; rasterize at 300 dpi.
     public SKBitmap RenderPage(Size pageSize, Rectangle margin, out bool morePages)

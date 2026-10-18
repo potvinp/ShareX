@@ -69,6 +69,11 @@ namespace ShareX
                     await Task.Delay(delay);
                 }
 
+                if (OperatingSystem.IsMacOS() && !MacPermissions.EnsureScreenCaptureAccess())
+                {
+                    return;
+                }
+
                 await CaptureInternalAsync(taskSettings, autoHideForm);
             }
             catch (Exception ex)
@@ -83,7 +88,8 @@ namespace ShareX
             bool showDesktopIcons = false;
             bool showMainForm = false;
 
-            if (taskSettings.CaptureSettings.CaptureAutoHideDesktopIcons && !CaptureHelpers.IsActiveWindowFullscreen() && DesktopIconManager.AreDesktopIconsVisible())
+            if (OperatingSystem.IsWindows() && taskSettings.CaptureSettings.CaptureAutoHideDesktopIcons &&
+                !CaptureHelpers.IsActiveWindowFullscreen() && DesktopIconManager.AreDesktopIconsVisible())
             {
                 DesktopIconManager.SetDesktopIconsVisibility(false);
                 showDesktopIcons = true;
@@ -164,10 +170,10 @@ namespace ShareX
         {
             TaskMetadata metadata = new TaskMetadata();
 
-            IntPtr handle = NativeMethods.GetForegroundWindow();
+            IntPtr handle = CaptureHelpers.GetForegroundWindow();
             WindowInfo windowInfo = new WindowInfo(handle);
 
-            if ((ignoreProcess == null || !windowInfo.ProcessName.Equals(ignoreProcess, StringComparison.OrdinalIgnoreCase)) &&
+            if ((ignoreProcess == null || !string.Equals(windowInfo.ProcessName, ignoreProcess, StringComparison.OrdinalIgnoreCase)) &&
                 (insideRect.IsEmpty || windowInfo.Rectangle.Contains(insideRect)))
             {
                 metadata.UpdateInfo(windowInfo);

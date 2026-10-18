@@ -49,16 +49,20 @@ namespace ShareX
         {
             WindowInfo windowInfo = new WindowInfo(WindowHandle);
 
-            if (windowInfo.IsMinimized)
+            // ScreenCaptureKit captures a window's own content, so macOS needs no restore or activation.
+            if (OperatingSystem.IsWindows())
             {
-                windowInfo.Restore();
-                Thread.Sleep(250);
-            }
+                if (windowInfo.IsMinimized)
+                {
+                    windowInfo.Restore();
+                    Thread.Sleep(250);
+                }
 
-            if (!windowInfo.IsActive)
-            {
-                windowInfo.Activate();
-                Thread.Sleep(100);
+                if (!windowInfo.IsActive)
+                {
+                    windowInfo.Activate();
+                    Thread.Sleep(100);
+                }
             }
 
             TaskMetadata metadata = new TaskMetadata();

@@ -26,7 +26,9 @@
 using SkiaSharp;
 using System;
 using System.Drawing;
+#if WINDOWS
 using System.Drawing.Printing;
+#endif
 using Image = SkiaSharp.SKBitmap;
 using MessageBox = ShareX.AvaloniaUI.MessageBox;
 using MessageBoxButtons = ShareX.AvaloniaUI.MessageBoxButtons;
@@ -50,7 +52,9 @@ namespace ShareX.HelpersLib
             }
         }
 
+#if WINDOWS
         private PrintDocument printDocument;
+#endif
         private PrintTextHelper printTextHelper;
 
         public PrintHelper(Image image)
@@ -71,15 +75,19 @@ namespace ShareX.HelpersLib
 
         private void InitPrint()
         {
-            if (OperatingSystem.IsWindows())
-            {
-                printDocument = new PrintDocument { PrintController = new StandardPrintController() };
-                printDocument.BeginPrint += printDocument_BeginPrint;
-                printDocument.PrintPage += printDocument_PrintPage;
-            }
+#if WINDOWS
+            printDocument = new PrintDocument { PrintController = new StandardPrintController() };
+            printDocument.BeginPrint += printDocument_BeginPrint;
+            printDocument.PrintPage += printDocument_PrintPage;
+#endif
         }
 
-        public void Dispose() => printDocument?.Dispose();
+        public void Dispose()
+        {
+#if WINDOWS
+            printDocument?.Dispose();
+#endif
+        }
 
         public void ShowPreview()
         {
@@ -88,13 +96,21 @@ namespace ShareX.HelpersLib
 
         internal (SKBitmap Bitmap, bool HasMore) RenderPreviewPage(int pageIndex)
         {
-            PageSettings pageSettings = printDocument?.PrinterSettings.IsValid == true ? printDocument.DefaultPageSettings : null;
-            Size size = pageSettings?.Bounds.Size ?? new Size(850, 1100);
+            // Page sizes are in hundredths of an inch; default to US Letter with 1 inch margins.
+            Size size = new Size(850, 1100);
+            int left = 100, top = 100, right = 100, bottom = 100;
+#if WINDOWS
+            if (printDocument?.PrinterSettings.IsValid == true)
+            {
+                PageSettings pageSettings = printDocument.DefaultPageSettings;
+                size = pageSettings.Bounds.Size;
+                (left, top, right, bottom) = (pageSettings.Margins.Left, pageSettings.Margins.Top, pageSettings.Margins.Right, pageSettings.Margins.Bottom);
+            }
+#endif
             if (PrintType == PrintType.Image) return (RenderImagePage(Image, size, Settings), false);
             PrintTextHelper renderer = new() { Text = Text, Font = Settings.TextFont };
             renderer.BeginPrint();
-            Margins margins = pageSettings?.Margins ?? new Margins(100, 100, 100, 100);
-            Rectangle margin = new(margins.Left, margins.Top, size.Width - margins.Left - margins.Right, size.Height - margins.Top - margins.Bottom);
+            Rectangle margin = new(left, top, size.Width - left - right, size.Height - top - bottom);
             SKBitmap page = null;
             bool hasMore = false;
             for (int index = 0; index <= pageIndex; index++)
@@ -106,6 +122,7 @@ namespace ShareX.HelpersLib
             return (page, hasMore);
         }
 
+#if WINDOWS
         public void TryDefaultPrinterOverride()
         {
             string defaultPrinterName = printDocument.PrinterSettings.PrinterName;
@@ -124,9 +141,13 @@ namespace ShareX.HelpersLib
             }
         }
 
+#endif
+
         public bool Print()
         {
-            if (!OperatingSystem.IsWindows()) throw new PlatformNotSupportedException("A printing backend is required for this platform.");
+#if !WINDOWS
+            throw new PlatformNotSupportedException("A printing backend is required for this platform.");
+#else
             if (Printable && (!Settings.ShowPrintDialog || WindowsPrintDialog.Show(printDocument)))
             {
                 if (PrintType == PrintType.Text)
@@ -140,8 +161,10 @@ namespace ShareX.HelpersLib
             }
 
             return false;
+#endif
         }
 
+#if WINDOWS
         private void printDocument_BeginPrint(object sender, PrintEventArgs e)
         {
             if (PrintType == PrintType.Text)
@@ -168,6 +191,7 @@ namespace ShareX.HelpersLib
             using SKBitmap page = RenderImagePage(Image, args.PageBounds.Size, Settings);
             WindowsPrintInterop.DrawImage(args, page, args.PageBounds);
         }
+#endif
 
         internal static SKBitmap RenderImagePage(SKBitmap source, Size pageSize, PrintSettings settings)
         {

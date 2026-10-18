@@ -29,6 +29,7 @@ using ShareX.HelpersLib;
 using ShareX.ImageEditor.Integration;
 using ShareX.ScreenCaptureLib.Presentation.RegionCapture;
 using SkiaSharp;
+using System;
 using System.Drawing;
 using System.Threading.Tasks;
 using Bitmap = SkiaSharp.SKBitmap;
@@ -88,12 +89,14 @@ public static class RegionCaptureTasks
             CaptureCursor = false
         };
 
-        Rectangle screenBounds = options.ActiveMonitorMode
+        // A macOS window cannot span displays, so the overlay always covers the display under the cursor.
+        bool activeMonitorMode = options.ActiveMonitorMode || OperatingSystem.IsMacOS();
+        Rectangle screenBounds = activeMonitorMode
             ? CaptureHelpers.GetActiveScreenBounds()
             : CaptureHelpers.GetScreenBounds();
 
         SKBitmap frozenScreenshot;
-        using (Bitmap canvas = options.ActiveMonitorMode
+        using (Bitmap canvas = activeMonitorMode
             ? screenshot.CaptureActiveMonitor()
             : screenshot.CaptureFullscreen())
         {

@@ -202,14 +202,17 @@ public static class LucideTrayIcon
             _synchronizationContext = SynchronizationContext.Current;
 
             RefreshIcon();
+#if WINDOWS
             if (OperatingSystem.IsWindows())
             {
                 SystemEvents.UserPreferenceChanged += OnUserPreferenceChanged;
                 SystemEvents.DisplaySettingsChanged += OnDisplaySettingsChanged;
             }
+#endif
             if (Application.Current?.PlatformSettings is { } platform) platform.ColorValuesChanged += OnColorsChanged;
         }
 
+#if WINDOWS
         private void OnUserPreferenceChanged(object sender, UserPreferenceChangedEventArgs e)
         {
             QueueRefresh();
@@ -219,6 +222,7 @@ public static class LucideTrayIcon
         {
             QueueRefresh();
         }
+#endif
 
         private void OnColorsChanged(object? sender, PlatformColorValues e) => QueueRefresh();
 
@@ -258,11 +262,13 @@ public static class LucideTrayIcon
             }
 
             _disposed = true;
+#if WINDOWS
             if (OperatingSystem.IsWindows())
             {
                 SystemEvents.UserPreferenceChanged -= OnUserPreferenceChanged;
                 SystemEvents.DisplaySettingsChanged -= OnDisplaySettingsChanged;
             }
+#endif
             if (Application.Current?.PlatformSettings is { } platform) platform.ColorValuesChanged -= OnColorsChanged;
             _trayIcon.Icon = null;
         }

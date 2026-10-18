@@ -291,7 +291,7 @@ namespace ShareX.HelpersLib
         {
             if (!string.IsNullOrEmpty(folderPath) && Directory.Exists(folderPath))
             {
-                if (!folderPath.EndsWith(@"\"))
+                if (OperatingSystem.IsWindows() && !folderPath.EndsWith(@"\"))
                 {
                     folderPath += @"\";
                 }
@@ -334,7 +334,15 @@ namespace ShareX.HelpersLib
             {
                 try
                 {
-                    NativeMethods.OpenFolderAndSelectFile(filePath);
+                    if (OperatingSystem.IsMacOS())
+                    {
+                        // Reveal in Finder.
+                        using Process process = Process.Start(new ProcessStartInfo("/usr/bin/open") { ArgumentList = { "-R", filePath }, UseShellExecute = false });
+                    }
+                    else
+                    {
+                        NativeMethods.OpenFolderAndSelectFile(filePath);
+                    }
 
                     DebugHelper.WriteLine("Folder opened with file: " + filePath);
 

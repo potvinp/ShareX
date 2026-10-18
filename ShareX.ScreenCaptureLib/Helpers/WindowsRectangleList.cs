@@ -48,6 +48,11 @@ namespace ShareX.ScreenCaptureLib
 
         public List<SimpleWindowInfo> GetWindowInfoList()
         {
+            if (OperatingSystem.IsMacOS())
+            {
+                return GetMacWindowInfoList();
+            }
+
             windows = new List<SimpleWindowInfo>();
             parentHandles = new HashSet<IntPtr>();
 
@@ -99,6 +104,16 @@ namespace ShareX.ScreenCaptureLib
             }
 
             return result;
+        }
+
+        // Quartz reports only top-level windows; child controls cannot be detected on macOS.
+        [System.Runtime.Versioning.SupportedOSPlatform("macos")]
+        private List<SimpleWindowInfo> GetMacWindowInfoList()
+        {
+            return MacWindows.GetWindows()
+                .Where(window => !IgnoreHandleList.Contains(window.Handle))
+                .Select(window => new SimpleWindowInfo(window.Handle, window.Rectangle) { IsWindow = true })
+                .ToList();
         }
 
         private bool CheckHandle(IntPtr handle, Rectangle? clipRect)

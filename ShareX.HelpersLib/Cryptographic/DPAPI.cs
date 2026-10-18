@@ -30,8 +30,10 @@ using System.Text;
 namespace ShareX.HelpersLib
 {
     // https://en.wikipedia.org/wiki/Data_Protection_API
+    // On macOS the same API is backed by an AES-GCM key in the user's keychain (see MacDataProtection).
     public static class DPAPI
     {
+#if WINDOWS
         public static string Encrypt(string stringToEncrypt, string optionalEntropy = null, DataProtectionScope scope = DataProtectionScope.CurrentUser)
         {
             byte[] data = Encoding.UTF8.GetBytes(stringToEncrypt);
@@ -75,5 +77,40 @@ namespace ShareX.HelpersLib
             byte[] decryptedData = ProtectedData.Unprotect(encryptedData, optionalEntropy, scope);
             return Encoding.UTF8.GetString(decryptedData);
         }
+#else
+        public static string Encrypt(string stringToEncrypt, string optionalEntropy = null)
+        {
+            byte[] data = Encoding.UTF8.GetBytes(stringToEncrypt);
+            return Encrypt(data, optionalEntropy);
+        }
+
+        public static string Encrypt(byte[] data, string optionalEntropy = null)
+        {
+            return Encrypt(data, optionalEntropy == null ? null : Encoding.UTF8.GetBytes(optionalEntropy));
+        }
+
+        public static string Encrypt(byte[] data, byte[] optionalEntropy)
+        {
+            if (!OperatingSystem.IsMacOS()) throw new PlatformNotSupportedException("Data protection requires a backend for this platform.");
+            return Convert.ToBase64String(MacDataProtection.Protect(data, optionalEntropy));
+        }
+
+        public static string Decrypt(string encryptedString, string optionalEntropy = null)
+        {
+            byte[] encryptedData = Convert.FromBase64String(encryptedString);
+            return Decrypt(encryptedData, optionalEntropy);
+        }
+
+        public static string Decrypt(byte[] encryptedData, string optionalEntropy = null)
+        {
+            return Decrypt(encryptedData, optionalEntropy == null ? null : Encoding.UTF8.GetBytes(optionalEntropy));
+        }
+
+        public static string Decrypt(byte[] encryptedData, byte[] optionalEntropy)
+        {
+            if (!OperatingSystem.IsMacOS()) throw new PlatformNotSupportedException("Data protection requires a backend for this platform.");
+            return Encoding.UTF8.GetString(MacDataProtection.Unprotect(encryptedData, optionalEntropy));
+        }
+#endif
     }
 }

@@ -172,12 +172,14 @@ public static class WindowsImageInterop
         return result;
     }
 
+#if WINDOWS
     public static System.Drawing.Icon ToIcon(this SKBitmap bitmap)
     {
         using System.IO.MemoryStream stream = new(bitmap.GetIconBytes(), false);
         using System.Drawing.Icon icon = new(stream);
         return (System.Drawing.Icon)icon.Clone();
     }
+#endif
 
     private static unsafe void SetOpaque(SKBitmap bitmap)
     {

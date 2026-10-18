@@ -23,6 +23,9 @@
 
 #endregion License Information (GPL v3)
 
+// Windows.Graphics.Capture is a WinRT API; macOS recording needs a ScreenCaptureKit backend.
+#if WINDOWS
+
 using ShareX.ScreenRecordingLib.Native;
 using System.Drawing;
 using System.Runtime.CompilerServices;
@@ -277,3 +280,4 @@ internal sealed unsafe class GraphicsCapture : IDisposable
 
     public void Dispose() => DisposeSources();
 }
+#endif

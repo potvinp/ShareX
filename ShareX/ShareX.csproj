@@ -1,11 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net10.0-windows10.0.22621.0</TargetFramework>
+    <TargetFramework>$(SharexWindowsSdkTargetFramework)</TargetFramework>
     <OutputType>WinExe</OutputType>
     <ApplicationIcon>ShareX_Icon.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <Description>Screen capture, file sharing and productivity tool</Description>
-    <SupportedOSPlatformVersion>10.0.22621.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="'$(SharexTargetOS)' == 'windows'">10.0.22621.0</SupportedOSPlatformVersion>
     <CETCompat>false</CETCompat>
   </PropertyGroup>
   <ItemGroup>
@@ -55,6 +55,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <RuntimeHostConfigurationOption Include="System.Globalization.UseNls" Value="true" />
+    <RuntimeHostConfigurationOption Include="System.Globalization.UseNls" Value="true" Condition="'$(SharexTargetOS)' == 'windows'" />
   </ItemGroup>
 </Project>

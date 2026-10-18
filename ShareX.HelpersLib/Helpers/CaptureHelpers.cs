@@ -90,6 +90,12 @@ namespace ShareX.HelpersLib
 
         public static Point GetCursorPosition()
         {
+            if (OperatingSystem.IsMacOS())
+            {
+                MacNativeMethods.GetCursorPosition(out double x, out double y);
+                return MacDisplays.PointsToPixels(new PointF((float)x, (float)y));
+            }
+
             if (NativeMethods.GetCursorPos(out POINT point))
             {
                 return (Point)point;
@@ -98,8 +104,28 @@ namespace ShareX.HelpersLib
             return Point.Empty;
         }
 
+        /// <summary>The cursor position in Avalonia's screen coordinates: points on macOS, pixels elsewhere.</summary>
+        public static Avalonia.PixelPoint GetAvaloniaCursorPosition()
+        {
+            if (OperatingSystem.IsMacOS())
+            {
+                MacNativeMethods.GetCursorPosition(out double x, out double y);
+                return new Avalonia.PixelPoint((int)Math.Round(x), (int)Math.Round(y));
+            }
+
+            Point point = GetCursorPosition();
+            return new Avalonia.PixelPoint(point.X, point.Y);
+        }
+
         public static void SetCursorPosition(int x, int y)
         {
+            if (OperatingSystem.IsMacOS())
+            {
+                PointF point = MacDisplays.PixelsToPoints(new Point(x, y));
+                MacNativeMethods.SetCursorPosition(point.X, point.Y);
+                return;
+            }
+
             NativeMethods.SetCursorPos(x, y);
         }
 
@@ -287,8 +313,19 @@ namespace ShareX.HelpersLib
             return CreateRectangle(posOnClick, newPosition);
         }
 
+        /// <summary>The active top-level window: an HWND on Windows, a CGWindowID on macOS.</summary>
+        public static IntPtr GetForegroundWindow()
+        {
+            return OperatingSystem.IsMacOS() ? MacWindows.GetForegroundWindow() : NativeMethods.GetForegroundWindow();
+        }
+
         public static Rectangle GetWindowRectangle(IntPtr handle)
         {
+            if (OperatingSystem.IsMacOS())
+            {
+                return MacWindows.GetWindowRectangle(handle);
+            }
+
             Rectangle rect = Rectangle.Empty;
 
             if (NativeMethods.IsDWMEnabled() && NativeMethods.GetExtendedFrameBounds(handle, out Rectangle tempRect))
@@ -311,7 +348,7 @@ namespace ShareX.HelpersLib
 
         public static Rectangle GetActiveWindowRectangle()
         {
-            IntPtr handle = NativeMethods.GetForegroundWindow();
+            IntPtr handle = GetForegroundWindow();
             return GetWindowRectangle(handle);
         }
 
@@ -323,6 +360,12 @@ namespace ShareX.HelpersLib
 
         public static bool IsActiveWindowFullscreen()
         {
+            if (OperatingSystem.IsMacOS())
+            {
+                Rectangle windowRectangle = GetActiveWindowRectangle();
+                return !windowRectangle.IsEmpty && windowRectangle.Contains(DesktopScreen.FromRectangle(windowRectangle).Bounds);
+            }
+
             IntPtr handle = NativeMethods.GetForegroundWindow();
 
             if (handle.ToInt32() > 0)

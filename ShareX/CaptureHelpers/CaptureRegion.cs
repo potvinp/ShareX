@@ -27,6 +27,7 @@ using ShareX.HelpersLib;
 using ShareX.ScreenCaptureLib;
 using ShareX.ScreenCaptureLib.Presentation.RegionCapture;
 using SkiaSharp;
+using System;
 using System.Drawing;
 using System.Threading.Tasks;
 using Bitmap = SkiaSharp.SKBitmap;
@@ -50,7 +51,8 @@ namespace ShareX
             Screenshot screenshot = TaskHelpers.GetScreenshot(taskSettings);
             screenshot.CaptureCursor = false;
 
-            bool activeMonitorMode = taskSettings.CaptureSettings.RegionCaptureOptions.ActiveMonitorMode;
+            // A macOS window cannot span displays, so the overlay always covers the display under the cursor.
+            bool activeMonitorMode = taskSettings.CaptureSettings.RegionCaptureOptions.ActiveMonitorMode || OperatingSystem.IsMacOS();
             Rectangle screenBounds = activeMonitorMode
                 ? CaptureHelpers.GetActiveScreenBounds()
                 : CaptureHelpers.GetScreenBounds();
@@ -66,7 +68,8 @@ namespace ShareX
             SKBitmap cursorBitmap = null;
             Point cursorPosition = Point.Empty;
 
-            if (taskSettings.CaptureSettings.ShowCursor)
+            // CursorData reads the Win32 cursor; macOS has no separate cursor annotation yet.
+            if (taskSettings.CaptureSettings.ShowCursor && OperatingSystem.IsWindows())
             {
                 CursorData cursorData = new CursorData();
                 if (cursorData.IsVisible)

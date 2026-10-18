@@ -244,6 +244,7 @@ namespace ShareX.HelpersLib
             return CultureInfo.CurrentCulture.Calendar.GetWeekOfYear(dateTime, CalendarWeekRule.FirstDay, DayOfWeek.Monday);
         }
 
+#if WINDOWS
         public static void DisposeHandle(this Icon icon)
         {
             if (icon.Handle != IntPtr.Zero)
@@ -251,6 +252,7 @@ namespace ShareX.HelpersLib
                 NativeMethods.DestroyIcon(icon.Handle);
             }
         }
+#endif
 
         public static void ApplyDefaultPropertyValues(this object self)
         {

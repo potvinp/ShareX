@@ -33,7 +33,9 @@ using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+#if WINDOWS
 using System.Media;
+#endif
 using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Resources;
@@ -305,53 +307,53 @@ namespace ShareX.HelpersLib
 
         public static bool IsWindowsXP()
         {
-            return OSVersion.Major == 5 && OSVersion.Minor == 1;
+            return OperatingSystem.IsWindows() && OSVersion.Major == 5 && OSVersion.Minor == 1;
         }
 
         public static bool IsWindowsXPOrGreater()
         {
-            return (OSVersion.Major == 5 && OSVersion.Minor >= 1) || OSVersion.Major > 5;
+            return OperatingSystem.IsWindows() && ((OSVersion.Major == 5 && OSVersion.Minor >= 1) || OSVersion.Major > 5);
         }
 
         public static bool IsWindowsVista()
         {
-            return OSVersion.Major == 6;
+            return OperatingSystem.IsWindows() && OSVersion.Major == 6;
         }
 
         public static bool IsWindowsVistaOrGreater()
         {
-            return OSVersion.Major >= 6;
+            return OperatingSystem.IsWindows() && OSVersion.Major >= 6;
         }
 
         public static bool IsWindows7()
         {
-            return OSVersion.Major == 6 && OSVersion.Minor == 1;
+            return OperatingSystem.IsWindows() && OSVersion.Major == 6 && OSVersion.Minor == 1;
         }
 
         public static bool IsWindows7OrGreater()
         {
-            return (OSVersion.Major == 6 && OSVersion.Minor >= 1) || OSVersion.Major > 6;
+            return OperatingSystem.IsWindows() && ((OSVersion.Major == 6 && OSVersion.Minor >= 1) || OSVersion.Major > 6);
         }
 
         public static bool IsWindows8()
         {
-            return OSVersion.Major == 6 && OSVersion.Minor == 2;
+            return OperatingSystem.IsWindows() && OSVersion.Major == 6 && OSVersion.Minor == 2;
         }
 
         public static bool IsWindows8OrGreater()
         {
-            return (OSVersion.Major == 6 && OSVersion.Minor >= 2) || OSVersion.Major > 6;
+            return OperatingSystem.IsWindows() && ((OSVersion.Major == 6 && OSVersion.Minor >= 2) || OSVersion.Major > 6);
         }
 
         public static bool IsWindows10OrGreater(int build = -1)
         {
-            return OSVersion.Major >= 10 && OSVersion.Build >= build;
+            return OperatingSystem.IsWindows() && OSVersion.Major >= 10 && OSVersion.Build >= build;
         }
 
         public static bool IsWindows11OrGreater(int build = -1)
         {
             build = Math.Max(22000, build);
-            return OSVersion.Major >= 10 && OSVersion.Build >= build;
+            return OperatingSystem.IsWindows() && OSVersion.Major >= 10 && OSVersion.Build >= build;
         }
 
         public static bool IsDefaultInstallDir()
@@ -377,6 +379,7 @@ namespace ShareX.HelpersLib
             return time;
         }
 
+#if WINDOWS
         public static void PlaySound(Stream stream)
         {
             if (stream != null)
@@ -420,6 +423,57 @@ namespace ShareX.HelpersLib
                 });
             }
         }
+#else
+        public static void PlaySound(Stream stream) => PlaySoundSync(stream);
+
+        public static void PlaySoundSync(Stream stream)
+        {
+            if (stream != null)
+            {
+                Task.Run(() =>
+                {
+                    string filePath = Path.Combine(Path.GetTempPath(), $"ShareX_{Guid.NewGuid():N}.wav");
+                    try
+                    {
+                        using (stream)
+                        using (FileStream file = File.Create(filePath))
+                        {
+                            stream.CopyTo(file);
+                        }
+                        PlaySoundFile(filePath);
+                    }
+                    finally
+                    {
+                        File.Delete(filePath);
+                    }
+                });
+            }
+        }
+
+        public static void PlaySoundAsync(string filePath)
+        {
+            if (!string.IsNullOrEmpty(filePath) && File.Exists(filePath))
+            {
+                Task.Run(() => PlaySoundFile(filePath));
+            }
+        }
+
+        private static void PlaySoundFile(string filePath)
+        {
+            if (!OperatingSystem.IsMacOS()) return;
+
+            try
+            {
+                // afplay ships with macOS and plays WAV, AIFF, MP3 and AAC.
+                using Process process = Process.Start(new ProcessStartInfo("/usr/bin/afplay") { ArgumentList = { filePath }, UseShellExecute = false });
+                process?.WaitForExit();
+            }
+            catch (Exception e)
+            {
+                DebugHelper.WriteException(e);
+            }
+        }
+#endif
 
         public static bool WaitWhile(Func<bool> check, int interval, int timeout = -1)
         {
@@ -931,6 +985,29 @@ namespace ShareX.HelpersLib
                 // Move in screen coordinates without reassigning Position and changing its cached DPI scale.
                 NativeMethods.SetWindowPos(handle, IntPtr.Zero, x, y, 0, 0,
                     SetWindowPosFlags.SWP_NOSIZE | SetWindowPosFlags.SWP_NOZORDER | SetWindowPosFlags.SWP_NOACTIVATE);
+            }
+        }
+
+        /// <summary>Places a capture overlay over <paramref name="bounds"/> (screen pixels), above the menu bar and Dock on macOS.</summary>
+        public static void ConfigureCaptureOverlay(Avalonia.Controls.Window window, Rectangle bounds)
+        {
+            if (!OperatingSystem.IsMacOS())
+            {
+                EnsureWindowPosition(window, bounds.X, bounds.Y);
+                return;
+            }
+
+            IntPtr handle = window.TryGetPlatformHandle()?.Handle ?? IntPtr.Zero;
+            if (handle == IntPtr.Zero)
+            {
+                return;
+            }
+
+            RectangleF points = MacDisplays.FromPixelRectangle(bounds).ToPoints(bounds);
+            int status = MacNativeMethods.ConfigureOverlayWindow(handle, points.X, points.Y, points.Width, points.Height);
+            if (status != MacNativeMethods.StatusOk)
+            {
+                DebugHelper.WriteLine("Unable to configure capture overlay window. Status: " + status);
             }
         }
 

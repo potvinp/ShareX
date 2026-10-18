@@ -147,6 +147,7 @@ namespace ShareX.HelpersLib
             return SetWindowLongPtr64(hWnd, nIndex, dwNewLong);
         }
 
+#if WINDOWS
         private static Icon GetSmallApplicationIcon(IntPtr handle)
         {
             IntPtr iconHandle;
@@ -197,6 +198,7 @@ namespace ShareX.HelpersLib
         {
             return GetSmallApplicationIcon(handle) ?? GetBigApplicationIcon(handle);
         }
+#endif
 
         public static bool GetBorderSize(IntPtr handle, out Size size)
         {
@@ -505,6 +507,7 @@ namespace ShareX.HelpersLib
             return CreateProcess(path, $"\"{path}\" {arguments}", ref pSec, ref tSec, false, (uint)flags, IntPtr.Zero, null, ref sInfo, out _);
         }
 
+#if WINDOWS
         public static Icon GetFileIcon(string filePath, bool isSmallIcon)
         {
             SHFILEINFO shfi = new SHFILEINFO();
@@ -545,6 +548,7 @@ namespace ShareX.HelpersLib
             DestroyIcon(hIcon);
             return icon;
         }
+#endif
 
         public static SkiaSharp.SKBitmap GetFileThumbnail(string filePath, Size thumbnailSize)
         {

@@ -28,8 +28,10 @@ using System.Runtime.InteropServices;
 using Vortice.Direct3D;
 using Vortice.Direct3D11;
 using Vortice.DXGI;
+#if WINDOWS
 using Windows.Graphics.DirectX.Direct3D11;
 using WinRT;
+#endif
 
 namespace ShareX.ScreenRecordingLib.Video;
 
@@ -37,7 +39,9 @@ internal sealed unsafe class GraphicsDevice : IDisposable
 {
     public ID3D11Device Device { get; private set; } = null!;
     public ID3D11DeviceContext Context { get; private set; } = null!;
+#if WINDOWS
     public IDirect3DDevice WinRTDevice { get; private set; } = null!;
+#endif
 
     public GraphicsDevice(nint monitor)
     {
@@ -51,11 +55,13 @@ internal sealed unsafe class GraphicsDevice : IDisposable
             Context = context;
             using ID3D11Multithread multithread = Context.QueryInterface<ID3D11Multithread>();
             multithread.SetMultithreadProtected(true);
+#if WINDOWS
             using IDXGIDevice dxgiDevice = Device.QueryInterface<IDXGIDevice>();
             nint inspectable;
             NativeMethods.CreateDirect3D11DeviceFromDXGIDevice(dxgiDevice.NativePointer, &inspectable).ThrowOnFailure();
             try { WinRTDevice = MarshalInterface<IDirect3DDevice>.FromAbi(inspectable); }
             finally { Marshal.Release(inspectable); }
+#endif
         }
         catch { Dispose(); throw; }
     }
@@ -96,7 +102,9 @@ internal sealed unsafe class GraphicsDevice : IDisposable
 
     public void Dispose()
     {
+#if WINDOWS
         WinRTDevice?.Dispose();
+#endif
         Context?.Dispose();
         Device?.Dispose();
     }

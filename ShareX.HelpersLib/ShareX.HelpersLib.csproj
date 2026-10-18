@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net10.0-windows</TargetFramework>
+    <TargetFramework>$(SharexTargetFramework)</TargetFramework>
     <OutputType>Library</OutputType>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
@@ -11,11 +11,26 @@
   </ItemGroup>
   <ItemGroup>
     <!-- Existing Windows printing and shell icon interop still require System.Drawing.Common. -->
-    <FrameworkReference Include="Microsoft.WindowsDesktop.App" />
+    <FrameworkReference Include="Microsoft.WindowsDesktop.App" Condition="'$(SharexTargetOS)' == 'windows'" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ShareX.Avalonia\ShareX.Avalonia.csproj" />
   </ItemGroup>
+  <ItemGroup Condition="'$(SharexTargetOS)' != 'windows'">
+    <!-- Windows-only System.Drawing.Printing interop. -->
+    <Compile Remove="Native\WindowsPrintInterop.cs" />
+    <Compile Remove="Printer\WindowsPrintDialog.cs" />
+  </ItemGroup>
+  <PropertyGroup>
+    <SharexMacNativeLibrary>$(MSBuildThisFileDirectory)..\native\macos\bin\libsharex_macos.dylib</SharexMacNativeLibrary>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(SharexTargetOS)' == 'macos' and Exists('$(SharexMacNativeLibrary)')">
+    <!-- Universal native helper built by native/macos/build.sh; flows to every app that references HelpersLib. -->
+    <None Include="$(SharexMacNativeLibrary)" Link="libsharex_macos.dylib" CopyToOutputDirectory="PreserveNewest" Visible="false" />
+  </ItemGroup>
+  <Target Name="WarnMissingMacNativeLibrary" BeforeTargets="Build" Condition="'$(SharexTargetOS)' == 'macos' and !Exists('$(SharexMacNativeLibrary)')">
+    <Warning Text="libsharex_macos.dylib was not found. Run native/macos/build.sh on macOS; screen capture, hotkeys and keychain access will fail without it." />
+  </Target>
   <ItemGroup>
     <EmbeddedResource Update="Localization\Strings.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>

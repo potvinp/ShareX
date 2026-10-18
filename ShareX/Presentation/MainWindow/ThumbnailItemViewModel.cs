@@ -263,7 +263,7 @@ internal sealed class ThumbnailItemViewModel : INotifyPropertyChanged, IDisposab
                 return Bitmap.DecodeToWidth(stream, width, BitmapInterpolationMode.HighQuality);
             }
 
-            if (!string.IsNullOrEmpty(filePath) && File.Exists(filePath) && FileHelpers.IsVideoFile(filePath))
+            if (OperatingSystem.IsWindows() && !string.IsNullOrEmpty(filePath) && File.Exists(filePath) && FileHelpers.IsVideoFile(filePath))
             {
                 using DrawingBitmap? shellThumbnail = NativeMethods.GetFileThumbnail(filePath, new System.Drawing.Size(width, height));
 

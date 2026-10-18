@@ -316,8 +316,7 @@ public partial class NotificationWindow : Window
             return;
         }
 
-        System.Drawing.Point cursor = CaptureHelpers.GetCursorPosition();
-        Screen? screen = Screens.ScreenFromPoint(new PixelPoint(cursor.X, cursor.Y)) ?? Screens.Primary;
+        Screen? screen = Screens.ScreenFromPoint(CaptureHelpers.GetAvaloniaCursorPosition()) ?? Screens.Primary;
         if (screen == null)
         {
             return;
@@ -406,7 +405,7 @@ public partial class NotificationWindow : Window
         PixelPoint topLeft = NotificationCard.PointToScreen(default);
         PixelPoint bottomRight = NotificationCard.PointToScreen(
             new Point(NotificationCard.Bounds.Width, NotificationCard.Bounds.Height));
-        System.Drawing.Point cursor = CaptureHelpers.GetCursorPosition();
+        PixelPoint cursor = CaptureHelpers.GetAvaloniaCursorPosition();
         bool isInside = cursor.X >= topLeft.X && cursor.X < bottomRight.X &&
             cursor.Y >= topLeft.Y && cursor.Y < bottomRight.Y;
 

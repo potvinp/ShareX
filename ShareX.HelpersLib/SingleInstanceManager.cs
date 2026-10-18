@@ -85,6 +85,24 @@ namespace ShareX.HelpersLib
             }
         }
 
+        private NamedPipeServerStream CreatePipeServer()
+        {
+            if (!OperatingSystem.IsWindows())
+            {
+                // Unix pipes are domain sockets in the user's own temp directory, so access is already per-user.
+                return new NamedPipeServerStream(PipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
+            }
+
+            PipeSecurity pipeSecurity = new PipeSecurity();
+
+            using (WindowsIdentity identity = WindowsIdentity.GetCurrent())
+            {
+                pipeSecurity.AddAccessRule(new PipeAccessRule(identity.User, PipeAccessRights.ReadWrite, AccessControlType.Allow));
+            }
+
+            return NamedPipeServerStreamAcl.Create(PipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous, 0, 0, pipeSecurity);
+        }
+
         private async Task ListenForConnectionsAsync()
         {
             while (!cts.IsCancellationRequested)
@@ -93,14 +111,7 @@ namespace ShareX.HelpersLib
 
                 try
                 {
-                    PipeSecurity pipeSecurity = new PipeSecurity();
-
-                    using (WindowsIdentity identity = WindowsIdentity.GetCurrent())
-                    {
-                        pipeSecurity.AddAccessRule(new PipeAccessRule(identity.User, PipeAccessRights.ReadWrite, AccessControlType.Allow));
-                    }
-
-                    using (NamedPipeServerStream namedPipeServer = NamedPipeServerStreamAcl.Create(PipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous, 0, 0, pipeSecurity))
+                    using (NamedPipeServerStream namedPipeServer = CreatePipeServer())
                     {
                         namedPipeServerCreated = true;
 
