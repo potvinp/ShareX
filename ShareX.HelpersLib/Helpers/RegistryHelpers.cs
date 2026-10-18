@@ -119,6 +119,11 @@ namespace ShareX.HelpersLib
 
         public static string SearchProgramPath(string fileName)
         {
+            if (!OperatingSystem.IsWindows())
+            {
+                return null;
+            }
+
             // First method: HKEY_CLASSES_ROOT\Applications\{fileName}\shell\{command}\command
 
             string[] commands = new string[] { "open", "edit" };

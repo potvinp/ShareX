@@ -36,8 +36,8 @@ namespace ShareX.HelpersLib
         public static bool HasScreenCaptureAccess => MacNativeMethods.ScreenCapturePreflight() == 1;
 
         /// <summary>
-        /// Returns true if ShareX may capture the screen. Otherwise the first call in a session shows the
-        /// system's own (localized) Screen Recording prompt, and later calls open the System Settings pane.
+        /// Returns true if ShareX may capture the screen. Otherwise asks macOS for access, which registers ShareX in
+        /// Privacy &amp; Security and may show the system's (localized) prompt, then opens the Screen Recording pane.
         /// </summary>
         public static bool EnsureScreenCaptureAccess()
         {
@@ -48,10 +48,11 @@ namespace ShareX.HelpersLib
 
             DebugHelper.WriteLine("Screen Recording permission is not granted.");
 
-            if (Interlocked.Exchange(ref screenCaptureRequested, 1) == 0)
+            // macOS shows its prompt at most once per app and not at all on some versions, so the request alone is not
+            // enough; open the pane as well so the user can always switch ShareX on. A grant applies after restart.
+            if (Interlocked.Exchange(ref screenCaptureRequested, 1) == 0 && MacNativeMethods.ScreenCaptureRequest() == 1)
             {
-                // macOS only displays this prompt once per app; afterwards it returns false immediately.
-                return MacNativeMethods.ScreenCaptureRequest() == 1;
+                return true;
             }
 
             OpenScreenCaptureSettings();

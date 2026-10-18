@@ -35,6 +35,9 @@ public static unsafe class CameraCaptureDevices
 {
     public static IReadOnlyList<CameraCaptureDevice> GetCameras()
     {
+        // Media Foundation is Windows-only; macOS camera capture will need AVFoundation.
+        if (!OperatingSystem.IsWindows()) return [];
+
         HRESULT initialized = NativeMethods.CoInitializeEx(null, COINIT.COINIT_MULTITHREADED);
         if (initialized.Value != unchecked((int)0x80010106)) initialized.ThrowOnFailure(); // UI may already be STA.
         bool started = false;

@@ -48,6 +48,8 @@ public static unsafe class AudioCaptureDevices
 
     private static AudioCaptureDevice? GetDefaultDevice(DataFlow flow)
     {
+        if (!OperatingSystem.IsWindows()) return null;
+
         HRESULT initialized = NativeMethods.CoInitializeEx(null, COINIT.COINIT_MULTITHREADED);
         if (initialized.Value != unchecked((int)0x80010106)) initialized.ThrowOnFailure();
         try
@@ -67,6 +69,9 @@ public static unsafe class AudioCaptureDevices
 
     private static IReadOnlyList<AudioCaptureDevice> GetDevices(DataFlow flow)
     {
+        // MMDevice is a Windows COM API; macOS recording will need a Core Audio backend.
+        if (!OperatingSystem.IsWindows()) return [];
+
         HRESULT initialized = NativeMethods.CoInitializeEx(null, COINIT.COINIT_MULTITHREADED);
         // A UI thread may already be initialized as STA. Enumeration supports either apartment.
         if (initialized.Value != unchecked((int)0x80010106)) initialized.ThrowOnFailure(); // RPC_E_CHANGED_MODE
