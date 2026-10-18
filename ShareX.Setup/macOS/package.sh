@@ -68,7 +68,9 @@ if [ "$IDENTITY" != "-" ]; then
     SIGN_OPTIONS+=(--timestamp --options runtime)
 fi
 # Sign every file before the bundle, as Avalonia's macOS deployment guide recommends for .NET apps.
-find "$APP/Contents/MacOS" -type f -print0 | while IFS= read -r -d '' file; do
+# The main executable is skipped here: signing it validates the bundle's other files, so the bundle
+# signature below covers it once everything else is signed.
+find "$APP/Contents/MacOS" -type f ! -path "$APP/Contents/MacOS/ShareX" -print0 | while IFS= read -r -d '' file; do
     codesign "${SIGN_OPTIONS[@]}" --entitlements "$SETUP/ShareX.entitlements" "$file"
 done
 codesign "${SIGN_OPTIONS[@]}" --entitlements "$SETUP/ShareX.entitlements" "$APP"
