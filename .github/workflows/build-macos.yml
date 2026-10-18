@@ -97,21 +97,30 @@ jobs:
             fi
             prefix="arch -x86_64"
           fi
-          # Use a throwaway HOME so settings and logs go to $HOME/Documents/ShareX outside the runner's profile.
-          home="$RUNNER_TEMP/home"
-          mkdir -p "$home/Documents"
-          HOME="$home" $prefix "Output/macos-${{ matrix.arch }}/ShareX.app/Contents/MacOS/ShareX" -silent &
+          # The runner is disposable, so use the real ~/Documents/ShareX (Foundation ignores an overridden HOME).
+          # Skip the first-run start screen so startup reaches hotkeys, the menu bar icon and the main window.
+          personal="$HOME/Documents/ShareX"
+          rm -rf "$personal"
+          mkdir -p "$personal"
+          echo '{ "ShowStartScreen": false }' > "$personal/ApplicationConfig.json"
+          $prefix "Output/macos-${{ matrix.arch }}/ShareX.app/Contents/MacOS/ShareX" -silent &
           pid=$!
           sleep 30
+          log=$(find "$personal/Logs" -type f -exec cat {} \; 2> /dev/null || true)
+          echo "$log"
           status=0
           if ! kill -0 "$pid" 2> /dev/null; then
             echo "::error::ShareX exited during startup."
             status=1
           fi
-          # Foundation may resolve Documents from the account rather than $HOME, so check both.
-          for logs in "$home/Documents/ShareX/Logs" "$HOME/Documents/ShareX/Logs"; do
-            [ -d "$logs" ] && find "$logs" -type f -exec cat {} \;
-          done
+          if ! echo "$log" | grep -q "Hotkey host init finished."; then
+            echo "::error::Startup did not finish within 30 seconds."
+            status=1
+          fi
+          if echo "$log" | grep -q "Exception"; then
+            echo "::error::Exceptions were logged during startup."
+            status=1
+          fi
           kill "$pid" 2> /dev/null || true
           exit $status
 
