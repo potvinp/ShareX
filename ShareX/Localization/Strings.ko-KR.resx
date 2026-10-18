@@ -238,6 +238,9 @@
   <data name="ApplicationSettingsForm_btnResetSettings_Click_WouldYouLikeToResetShareXSettings" xml:space="preserve">
     <value>ShareX 설정을 재설정하시겠습니까?</value>
   </data>
+  <data name="ApplicationSettingsForm_cbStartWithMacOS_Text" xml:space="preserve">
+    <value>컴퓨터를 켤 때 ShareX도 실행하기</value>
+  </data>
   <data name="ApplicationSettingsForm_cbStartWithWindows_DisabledByPolicy_Text" xml:space="preserve">
     <value>시작up has been disabled by your organization</value>
   </data>
@@ -2088,6 +2091,9 @@ Do you want to abort the active 화면 녹화?</value>
   </data>
   <data name="StartScreen_PlatformNote" xml:space="preserve">
     <value>오픈 소스 • Windows용으로 제작</value>
+  </data>
+  <data name="StartScreen_PlatformNote_MacOS" xml:space="preserve">
+    <value>오픈 소스 • macOS용으로 제작</value>
   </data>
   <data name="StartScreen_SettingsNote" xml:space="preserve">
     <value>이 옵션은 언제든지 애플리케이션 설정에서 변경할 수 있습니다.</value>

@@ -238,6 +238,9 @@
   <data name="ApplicationSettingsForm_btnResetSettings_Click_WouldYouLikeToResetShareXSettings" xml:space="preserve">
     <value>¿Desea restablecer la configuración de ShareX?</value>
   </data>
+  <data name="ApplicationSettingsForm_cbStartWithMacOS_Text" xml:space="preserve">
+    <value>Ejecutar ShareX al iniciar macOS</value>
+  </data>
   <data name="ApplicationSettingsForm_cbStartWithWindows_DisabledByPolicy_Text" xml:space="preserve">
     <value>Iniciarup has been disabled by your organization</value>
   </data>
@@ -2088,6 +2091,9 @@ Do you want to abort the active grabación de pantalla?</value>
   </data>
   <data name="StartScreen_PlatformNote" xml:space="preserve">
     <value>Código abierto • Creado para Windows</value>
+  </data>
+  <data name="StartScreen_PlatformNote_MacOS" xml:space="preserve">
+    <value>Código abierto • Creado para macOS</value>
   </data>
   <data name="StartScreen_SettingsNote" xml:space="preserve">
     <value>Puedes cambiar estas opciones en cualquier momento en la configuración de la aplicación.</value>

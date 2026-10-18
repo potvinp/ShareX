@@ -5173,6 +5173,11 @@ namespace ShareX.Localization {
                 return ResourceManager.GetString("ApplicationSettingsForm_cbStartWithWindows_Text", resourceCulture);
             }
         }
+        public static string ApplicationSettingsForm_cbStartWithMacOS_Text {
+            get {
+                return ResourceManager.GetString("ApplicationSettingsForm_cbStartWithMacOS_Text", resourceCulture);
+            }
+        }
         public static string MainForm_tsmiDeleteSelectedFile_Click_Do_you_really_want_to_delete_this_file_ {
             get {
                 return ResourceManager.GetString("MainForm_tsmiDeleteSelectedFile_Click_Do_you_really_want_to_delete_this_file_", resourceCulture);
@@ -5491,6 +5496,11 @@ namespace ShareX.Localization {
         public static string StartScreen_PlatformNote {
             get {
                 return ResourceManager.GetString("StartScreen_PlatformNote", resourceCulture);
+            }
+        }
+        public static string StartScreen_PlatformNote_MacOS {
+            get {
+                return ResourceManager.GetString("StartScreen_PlatformNote_MacOS", resourceCulture);
             }
         }
         public static string StartScreen_PersonalizeTitle {

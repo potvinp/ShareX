@@ -908,7 +908,7 @@ public sealed class ApplicationSettingsViewModel : INotifyPropertyChanged, IDisp
 
     private void RefreshStartWithWindows()
     {
-        StartWithWindowsText = Strings.ApplicationSettingsForm_cbStartWithWindows_Text;
+        StartWithWindowsText = StartupManager.StartupOptionText;
         StartWithWindowsEnabled = false;
 
         try

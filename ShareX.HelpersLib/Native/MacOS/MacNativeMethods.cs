@@ -101,6 +101,19 @@ namespace ShareX.HelpersLib
         [DllImport(Library, EntryPoint = "sharex_activate_app")]
         public static extern void ActivateApp();
 
+        public const int LoginItemNotRegistered = 0;
+        public const int LoginItemEnabled = 1;
+        public const int LoginItemRequiresApproval = 2;
+
+        [DllImport(Library, EntryPoint = "sharex_login_item_status")]
+        public static extern int GetLoginItemStatus();
+
+        [DllImport(Library, EntryPoint = "sharex_login_item_set")]
+        public static extern int SetLoginItem(int enabled);
+
+        [DllImport(Library, EntryPoint = "sharex_open_login_items_settings")]
+        public static extern void OpenLoginItemsSettings();
+
         public static MacScreenData[] GetScreens() => ReadJson<MacScreenData[]>(GetScreensJsonNative()) ?? Array.Empty<MacScreenData>();
 
         public static MacWindowData[] GetWindows(bool onScreenOnly) =>

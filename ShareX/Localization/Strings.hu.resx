@@ -238,6 +238,9 @@
   <data name="ApplicationSettingsForm_btnResetSettings_Click_WouldYouLikeToResetShareXSettings" xml:space="preserve">
     <value>Would you like to visszaállítás ShareX beállítások?</value>
   </data>
+  <data name="ApplicationSettingsForm_cbStartWithMacOS_Text" xml:space="preserve">
+    <value>A ShareX futtatása a macOS indításakor</value>
+  </data>
   <data name="ApplicationSettingsForm_cbStartWithWindows_DisabledByPolicy_Text" xml:space="preserve">
     <value>Indításup has been letiltva by your organization</value>
   </data>
@@ -2088,6 +2091,9 @@ Do you want to megszakítás the active képernyőfelvétel?</value>
   </data>
   <data name="StartScreen_PlatformNote" xml:space="preserve">
     <value>Nyílt forráskódú • Windowshoz készült</value>
+  </data>
+  <data name="StartScreen_PlatformNote_MacOS" xml:space="preserve">
+    <value>Nyílt forráskódú • macOShoz készült</value>
   </data>
   <data name="StartScreen_SettingsNote" xml:space="preserve">
     <value>Ezeket a beállításokat bármikor módosíthatja az alkalmazás beállításaiban.</value>

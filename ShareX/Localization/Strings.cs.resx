@@ -238,6 +238,9 @@
   <data name="ApplicationSettingsForm_btnResetSettings_Click_WouldYouLikeToResetShareXSettings" xml:space="preserve">
     <value>Chcete obnovit nastavení ShareX?</value>
   </data>
+  <data name="ApplicationSettingsForm_cbStartWithMacOS_Text" xml:space="preserve">
+    <value>Spouštět ShareX při spuštění macOS</value>
+  </data>
   <data name="ApplicationSettingsForm_cbStartWithWindows_DisabledByPolicy_Text" xml:space="preserve">
     <value>Spouštění bylo zakázáno vaší organizací</value>
   </data>
@@ -2088,6 +2091,9 @@ Chcete aktivní nahrávání obrazovky přerušit?</value>
   </data>
   <data name="StartScreen_PlatformNote" xml:space="preserve">
     <value>Open source • Vytvořeno pro Windows</value>
+  </data>
+  <data name="StartScreen_PlatformNote_MacOS" xml:space="preserve">
+    <value>Open source • Vytvořeno pro macOS</value>
   </data>
   <data name="StartScreen_SettingsNote" xml:space="preserve">
     <value>Tyto možnosti můžete kdykoli změnit v nastavení aplikace.</value>

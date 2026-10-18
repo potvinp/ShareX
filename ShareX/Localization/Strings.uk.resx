@@ -238,6 +238,9 @@
   <data name="ApplicationSettingsForm_btnResetSettings_Click_WouldYouLikeToResetShareXSettings" xml:space="preserve">
     <value>Чи бажаєте Ви скинути налаштування ShareX?</value>
   </data>
+  <data name="ApplicationSettingsForm_cbStartWithMacOS_Text" xml:space="preserve">
+    <value>Запустити ShareX під час запуску macOS</value>
+  </data>
   <data name="ApplicationSettingsForm_cbStartWithWindows_DisabledByPolicy_Text" xml:space="preserve">
     <value>Автозапуск вимкнено Вашою організацією</value>
   </data>
@@ -2088,6 +2091,9 @@
   </data>
   <data name="StartScreen_PlatformNote" xml:space="preserve">
     <value>Відкритий код • Створено для Windows</value>
+  </data>
+  <data name="StartScreen_PlatformNote_MacOS" xml:space="preserve">
+    <value>Відкритий код • Створено для macOS</value>
   </data>
   <data name="StartScreen_SettingsNote" xml:space="preserve">
     <value>Ці параметри можна будь-коли змінити в налаштуваннях програми.</value>

@@ -238,6 +238,9 @@
   <data name="ApplicationSettingsForm_btnResetSettings_Click_WouldYouLikeToResetShareXSettings" xml:space="preserve">
     <value>האם תרצה לאפס את הגדרות ShareX?</value>
   </data>
+  <data name="ApplicationSettingsForm_cbStartWithMacOS_Text" xml:space="preserve">
+    <value>הפעל את ShareX בעת עליית macOS</value>
+  </data>
   <data name="ApplicationSettingsForm_cbStartWithWindows_DisabledByPolicy_Text" xml:space="preserve">
     <value>האתחול הושבת על ידי הארגון שלך</value>
   </data>
@@ -2088,6 +2091,9 @@
   </data>
   <data name="StartScreen_PlatformNote" xml:space="preserve">
     <value>קוד פתוח • נבנה עבור Windows</value>
+  </data>
+  <data name="StartScreen_PlatformNote_MacOS" xml:space="preserve">
+    <value>קוד פתוח • נבנה עבור macOS</value>
   </data>
   <data name="StartScreen_SettingsNote" xml:space="preserve">
     <value>ניתן לשנות אפשרויות אלה בכל עת בהגדרות היישום.</value>

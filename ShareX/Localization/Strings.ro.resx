@@ -238,6 +238,9 @@
   <data name="ApplicationSettingsForm_btnResetSettings_Click_WouldYouLikeToResetShareXSettings" xml:space="preserve">
     <value>Doriți să resetați setările ShareX?</value>
   </data>
+  <data name="ApplicationSettingsForm_cbStartWithMacOS_Text" xml:space="preserve">
+    <value>Rulați ShareX la pornirea macOS-ului</value>
+  </data>
   <data name="ApplicationSettingsForm_cbStartWithWindows_DisabledByPolicy_Text" xml:space="preserve">
     <value>Pornirea a fost dezactivată de către organizația dvs.</value>
   </data>
@@ -2088,6 +2091,9 @@ Vrei să anulezi înregistrarea activă a ecranului?</value>
   </data>
   <data name="StartScreen_PlatformNote" xml:space="preserve">
     <value>Sursă deschisă • Creat pentru Windows</value>
+  </data>
+  <data name="StartScreen_PlatformNote_MacOS" xml:space="preserve">
+    <value>Sursă deschisă • Creat pentru macOS</value>
   </data>
   <data name="StartScreen_SettingsNote" xml:space="preserve">
     <value>Puteți modifica oricând aceste opțiuni din setările aplicației.</value>

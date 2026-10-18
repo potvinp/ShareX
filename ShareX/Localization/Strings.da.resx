@@ -238,6 +238,9 @@
   <data name="ApplicationSettingsForm_btnResetSettings_Click_WouldYouLikeToResetShareXSettings" xml:space="preserve">
     <value>Vil du gendanne ShareX-indstillingerne?</value>
   </data>
+  <data name="ApplicationSettingsForm_cbStartWithMacOS_Text" xml:space="preserve">
+    <value>Kør ShareX når macOS starter</value>
+  </data>
   <data name="ApplicationSettingsForm_cbStartWithWindows_DisabledByPolicy_Text" xml:space="preserve">
     <value>Autostart har deaktiveret af din organisation</value>
   </data>
@@ -2088,6 +2091,9 @@ Vil du afbryde den aktive skærmoptagelse?</value>
   </data>
   <data name="StartScreen_PlatformNote" xml:space="preserve">
     <value>Open source • Bygget til Windows</value>
+  </data>
+  <data name="StartScreen_PlatformNote_MacOS" xml:space="preserve">
+    <value>Open source • Bygget til macOS</value>
   </data>
   <data name="StartScreen_SettingsNote" xml:space="preserve">
     <value>Du kan altid ændre disse indstillinger under programindstillinger.</value>

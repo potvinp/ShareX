@@ -40,6 +40,11 @@ namespace ShareX
         private static readonly StartupTask packageTask = StartupTask.GetForCurrentPackageAsync().GetAwaiter().GetResult()[StartupTargetIndex];
 #endif
 
+        /// <summary>Label for the run-at-startup option, naming the current operating system.</summary>
+        public static string StartupOptionText => OperatingSystem.IsMacOS()
+            ? Localization.Strings.ApplicationSettingsForm_cbStartWithMacOS_Text
+            : Localization.Strings.ApplicationSettingsForm_cbStartWithWindows_Text;
+
         public static string StartupTargetPath
         {
             get
@@ -59,6 +64,11 @@ namespace ShareX
 #if MicrosoftStore
                 return (StartupState)packageTask.State;
 #else
+                if (OperatingSystem.IsMacOS())
+                {
+                    return MacLoginItem.IsEnabled ? StartupState.Enabled : StartupState.Disabled;
+                }
+
                 if (ShortcutHelpers.CheckShortcut(Environment.SpecialFolder.Startup, "ShareX", StartupTargetPath))
                 {
                     if (Registry.GetValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\StartupFolder",
@@ -93,7 +103,11 @@ namespace ShareX
                     throw new NotSupportedException();
                 }
 #else
-                if (value == StartupState.Enabled || value == StartupState.Disabled)
+                if ((value == StartupState.Enabled || value == StartupState.Disabled) && OperatingSystem.IsMacOS())
+                {
+                    MacLoginItem.SetEnabled(value == StartupState.Enabled);
+                }
+                else if (value == StartupState.Enabled || value == StartupState.Disabled)
                 {
                     ShortcutHelpers.SetShortcut(value == StartupState.Enabled, Environment.SpecialFolder.Startup, "ShareX", StartupTargetPath, "-silent");
                 }

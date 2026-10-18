@@ -238,6 +238,9 @@
   <data name="ApplicationSettingsForm_btnResetSettings_Click_WouldYouLikeToResetShareXSettings" xml:space="preserve">
     <value>Vill du återställa ShareX-inställningarna?</value>
   </data>
+  <data name="ApplicationSettingsForm_cbStartWithMacOS_Text" xml:space="preserve">
+    <value>Kör ShareX när macOS startar</value>
+  </data>
   <data name="ApplicationSettingsForm_cbStartWithWindows_DisabledByPolicy_Text" xml:space="preserve">
     <value>Autostart har inaktiverats av din organisation</value>
   </data>
@@ -2088,6 +2091,9 @@ Vill du avbryta den aktiva skärminspelningen?</value>
   </data>
   <data name="StartScreen_PlatformNote" xml:space="preserve">
     <value>Öppen källkod • Byggt för Windows</value>
+  </data>
+  <data name="StartScreen_PlatformNote_MacOS" xml:space="preserve">
+    <value>Öppen källkod • Byggt för macOS</value>
   </data>
   <data name="StartScreen_SettingsNote" xml:space="preserve">
     <value>Du kan ändra dessa alternativ när som helst i programinställningarna.</value>

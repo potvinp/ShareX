@@ -238,6 +238,9 @@
   <data name="ApplicationSettingsForm_btnResetSettings_Click_WouldYouLikeToResetShareXSettings" xml:space="preserve">
     <value>Bạn có muốn đặt lại các cài đặt cho ShareX không?</value>
   </data>
+  <data name="ApplicationSettingsForm_cbStartWithMacOS_Text" xml:space="preserve">
+    <value>Chạy ShareX cùng macOS</value>
+  </data>
   <data name="ApplicationSettingsForm_cbStartWithWindows_DisabledByPolicy_Text" xml:space="preserve">
     <value>Tự khởi động đã bị vô hiệu bởi tổ chức của bạn</value>
   </data>
@@ -2088,6 +2091,9 @@ Bạn có muốn hủy phiên quay màn hình đang hoạt động không?</valu
   </data>
   <data name="StartScreen_PlatformNote" xml:space="preserve">
     <value>Mã nguồn mở • Được xây dựng cho Windows</value>
+  </data>
+  <data name="StartScreen_PlatformNote_MacOS" xml:space="preserve">
+    <value>Mã nguồn mở • Được xây dựng cho macOS</value>
   </data>
   <data name="StartScreen_SettingsNote" xml:space="preserve">
     <value>Bạn có thể thay đổi các tùy chọn này bất cứ lúc nào trong cài đặt ứng dụng.</value>

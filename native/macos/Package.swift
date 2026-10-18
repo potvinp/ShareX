@@ -20,6 +20,7 @@ let package = Package(
                 .linkedFramework("CoreGraphics"),
                 .linkedFramework("ScreenCaptureKit"),
                 .linkedFramework("Security"),
+                .linkedFramework("ServiceManagement"),
                 .unsafeFlags(["-Xlinker", "-install_name", "-Xlinker", "@rpath/libsharex_macos.dylib"])
             ]
         )

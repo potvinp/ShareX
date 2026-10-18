@@ -238,6 +238,9 @@
   <data name="ApplicationSettingsForm_btnResetSettings_Click_WouldYouLikeToResetShareXSettings" xml:space="preserve">
     <value>Gostaria de redefinir as configurações do ShareX?</value>
   </data>
+  <data name="ApplicationSettingsForm_cbStartWithMacOS_Text" xml:space="preserve">
+    <value>Executar ShareX quando o macOS iniciar</value>
+  </data>
   <data name="ApplicationSettingsForm_cbStartWithWindows_DisabledByPolicy_Text" xml:space="preserve">
     <value>A inicialização foi desativada pela sua organização</value>
   </data>
@@ -2088,6 +2091,9 @@ Deseja interromper a gravação de tela ativa?</value>
   </data>
   <data name="StartScreen_PlatformNote" xml:space="preserve">
     <value>Código aberto • Feito para Windows</value>
+  </data>
+  <data name="StartScreen_PlatformNote_MacOS" xml:space="preserve">
+    <value>Código aberto • Feito para macOS</value>
   </data>
   <data name="StartScreen_SettingsNote" xml:space="preserve">
     <value>Você pode alterar essas opções a qualquer momento nas configurações do aplicativo.</value>
